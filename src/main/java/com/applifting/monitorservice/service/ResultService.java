@@ -8,6 +8,6 @@ public interface ResultService {
 
     Result saveMonitoringResult(String endpointName, Integer statusCode, String payload);
 
-    List<Result> findAll();
+    List<Result> findAll(String accessToken, String endpointName);
 
 }

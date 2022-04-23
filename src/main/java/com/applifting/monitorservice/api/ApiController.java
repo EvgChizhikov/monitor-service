@@ -20,15 +20,15 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api")
-public class UserController {
+public class ApiController {
 
     private final UserService userService;
     private final EndpointService endpointService;
     private final ResultService resultService;
 
     @GetMapping(value = "/users", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<User>> getUsers() {
-        return ResponseEntity.ok().body(userService.getAllUsers());
+    public ResponseEntity<List<User>> getUsers(@RequestHeader(value = "accessToken") String accessToken) {
+        return ResponseEntity.ok().body(userService.getAllUsers(accessToken));
     }
 
     @PostMapping("/createUser")
@@ -37,24 +37,25 @@ public class UserController {
         return ResponseEntity.created(uri).body(userService.saveUser(user));
     }
 
-    @GetMapping(value = "/results", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<Result>> getResults() {
-        return ResponseEntity.ok().body(resultService.findAll());
+    @GetMapping(value = "/{endpointName}/results", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<Result>> getResults(@PathVariable String endpointName,
+                                                   @RequestHeader(value = "accessToken")  String token) {
+        return ResponseEntity.ok().body(resultService.findAll(token, endpointName));
     }
 
     @PostMapping("/addEndpoint")
-    public ResponseEntity<?> addEndpoint(@RequestBody EndpointToUser form) {
+    public ResponseEntity<?> addEndpoint(@RequestHeader(value = "accessToken") String accessToken, @RequestBody EndpointToUser form) {
         URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/addEndpoint").toUriString());
-        Endpoint endpoint = endpointService.saveEndpointToUserByName(
-                form.getUserName(), form.getEndpointName(), form.getUrl(), form.getMonitoredInterval());
+        Endpoint endpoint = endpointService.saveEndpointToUser(
+                accessToken, form.getEndpointName(), form.getUrl(), form.getMonitoredInterval());
         Sender sender = new Sender(resultService, form.getEndpointName(), form.getMonitoredInterval(), form.getUrl());
         sender.start();
         return ResponseEntity.created(uri).body(endpoint);
     }
 
     @PostMapping("/deleteEndpoint")
-    public ResponseEntity<?> deleteEndpoint(@RequestBody EndpointToUser form) {
-        endpointService.deleteEndpointByName(form.getEndpointName());
+    public ResponseEntity<?> deleteEndpoint(@RequestBody EndpointToUser form, @RequestHeader(value = "accessToken") String accessToken) {
+        endpointService.deleteEndpointByName(accessToken, form.getEndpointName());
         return ResponseEntity.ok().build();
     }
 

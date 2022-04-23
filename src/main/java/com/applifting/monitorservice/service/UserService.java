@@ -10,5 +10,5 @@ public interface UserService {
 
     User getUserByName(String name);
 
-    List<User> getAllUsers();
+    List<User> getAllUsers(String accessToken);
 }

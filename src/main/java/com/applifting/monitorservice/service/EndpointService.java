@@ -2,16 +2,17 @@ package com.applifting.monitorservice.service;
 
 import com.applifting.monitorservice.data.model.Endpoint;
 
-import java.time.LocalDateTime;
 
 public interface EndpointService {
 
-    Endpoint saveEndpointToUserByName(String userName, String endpointName, String url, Integer monitoredInterval);
+    Endpoint saveEndpointToUser(String accessToken, String endpointName, String url, Integer monitoredInterval);
 
     Endpoint updateEndpoint(Endpoint endpoint);
 
-    Endpoint getEndpointByName(String name);
+    Endpoint getAllEndpoints(String accessToken);
 
-    void deleteEndpointByName(String name);
+    Endpoint getByEndpointId(String accessToken, Integer id);
+
+    void deleteEndpointByName(String accessToken, String name);
 
 }

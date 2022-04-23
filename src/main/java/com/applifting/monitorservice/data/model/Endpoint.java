@@ -21,6 +21,7 @@ public class Endpoint  {
     @Id
     @GeneratedValue(strategy = AUTO)
     private Integer endpointId;
+    @Column(unique=true)
     private String name;
     private String url;
     private LocalDateTime dateOfCreation;
@@ -34,7 +35,7 @@ public class Endpoint  {
     public Endpoint(String name, String url, LocalDateTime dateOfCreation, LocalDateTime dateOfLastCheck, Integer monitoredInterval, User owner) {
         this.name = name;
         this.url = url;
-//        this.dateOfCreation = dateOfCreation;
+        this.dateOfCreation = dateOfCreation;
         this.dateOfLastCheck = dateOfLastCheck;
         this.monitoredInterval = monitoredInterval;
         this.owner = owner;

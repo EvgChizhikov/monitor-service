@@ -15,11 +15,8 @@ public class User {
     @Id
     @GeneratedValue(strategy = AUTO)
     private Integer userId;
+    @Column(unique=true)
     private String userName;
     private String email;
     private String accessToken;
-
-    public User(String accessToken) {
-        this.accessToken = accessToken;
-    }
 }
