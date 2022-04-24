@@ -8,9 +8,7 @@ import java.util.List;
 
 public interface ResultRepo extends JpaRepository<Result, Integer> {
 
-//    @Query(value="SELECT * FROM appliftingdb.result LIMIT 10", nativeQuery = true)
-    List<Result> findTop10ByEndpointIdOrderByDateOfCheck(Endpoint endpoint);
-//    List<Result> findFirstTenResults();
+    List<Result> findTop10ByEndpointIdOrderByDateOfCheckDesc(Endpoint endpoint);
 
     void deleteAllByEndpointId(Endpoint endpoint);
 

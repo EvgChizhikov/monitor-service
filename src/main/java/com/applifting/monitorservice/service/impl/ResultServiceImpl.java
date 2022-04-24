@@ -27,12 +27,12 @@ public class ResultServiceImpl extends Authorization implements ResultService {
     }
 
     @Override
-    public Result saveMonitoringResult( String endpointName, Integer statusCode, String payload) {
+    public Result saveMonitoringResult(String endpointName, Integer statusCode, String payload) {
         Endpoint endpoint = endpointRepo.findByName(endpointName);
         LocalDateTime dateOfCheck = LocalDateTime.now();
         Result result = new Result(statusCode, payload, dateOfCheck, endpoint);
         endpoint.setDateOfLastCheck(dateOfCheck);
-        endpointService.updateEndpoint(endpoint);
+        endpointService.updateEndpointInThread(endpoint);
         log.info("Endpoint {} returned {} status code and {} message", endpointName, statusCode, payload);
         return resultRepo.save(result);
     }
@@ -41,7 +41,7 @@ public class ResultServiceImpl extends Authorization implements ResultService {
     public List<Result> findAll(String accessToken, String endpointName) {
         validateUser(accessToken);
         Endpoint endpoint = endpointRepo.findByName(endpointName);
-        return resultRepo.findTop10ByEndpointIdOrderByDateOfCheck(endpoint);
+        return resultRepo.findTop10ByEndpointIdOrderByDateOfCheckDesc(endpoint);
     }
 
 }

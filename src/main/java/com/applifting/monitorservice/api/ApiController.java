@@ -37,18 +37,31 @@ public class ApiController {
         return ResponseEntity.created(uri).body(userService.saveUser(user));
     }
 
-    @GetMapping(value = "/{endpointName}/results", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/results/{endpointName}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<Result>> getResults(@PathVariable String endpointName,
                                                    @RequestHeader(value = "accessToken")  String token) {
         return ResponseEntity.ok().body(resultService.findAll(token, endpointName));
     }
 
+    @GetMapping(value = "/endpoints", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<Endpoint>> getEndpoints(@RequestHeader(value = "accessToken")  String token) {
+        return ResponseEntity.ok().body(endpointService.getAllEndpoints(token));
+    }
+
+    @PostMapping(value = "/update/{endpointName}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> updateEndpoint(@RequestHeader(value = "accessToken") String accessToken,
+                                            @RequestBody EndpointToUser form,
+                                            @PathVariable String endpointName) {
+        return ResponseEntity.ok().body(endpointService.updateEndpoint(accessToken, form, endpointName));
+    }
+
     @PostMapping("/addEndpoint")
-    public ResponseEntity<?> addEndpoint(@RequestHeader(value = "accessToken") String accessToken, @RequestBody EndpointToUser form) {
+    public ResponseEntity<?> addEndpoint(@RequestHeader(value = "accessToken") String accessToken,
+                                         @RequestBody EndpointToUser form) {
         URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/addEndpoint").toUriString());
         Endpoint endpoint = endpointService.saveEndpointToUser(
                 accessToken, form.getEndpointName(), form.getUrl(), form.getMonitoredInterval());
-        Sender sender = new Sender(resultService, form.getEndpointName(), form.getMonitoredInterval(), form.getUrl());
+        Sender sender = new Sender(resultService, endpointService, form.getEndpointName(), form.getMonitoredInterval(), form.getUrl());
         sender.start();
         return ResponseEntity.created(uri).body(endpoint);
     }

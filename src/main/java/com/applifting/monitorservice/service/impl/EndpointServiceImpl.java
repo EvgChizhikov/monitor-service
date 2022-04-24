@@ -1,7 +1,7 @@
 package com.applifting.monitorservice.service.impl;
 
+import com.applifting.monitorservice.data.form.EndpointToUser;
 import com.applifting.monitorservice.data.model.Endpoint;
-
 import com.applifting.monitorservice.data.model.User;
 import com.applifting.monitorservice.repository.EndpointRepo;
 import com.applifting.monitorservice.repository.ResultRepo;
@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @Transactional
@@ -34,20 +35,37 @@ public class EndpointServiceImpl extends Authorization implements EndpointServic
     }
 
     @Override
-    public Endpoint updateEndpoint(Endpoint endpoint) {
+    public Endpoint updateEndpointInThread(Endpoint endpoint) {
         return endpointRepo.save(endpoint);
     }
 
     @Override
-    public Endpoint getAllEndpoints(String accessToken) {
+    public Endpoint updateEndpoint(String accessToken, EndpointToUser endpoint, String endpointName) {
+        User user = validateUser(accessToken);
+        Endpoint updatedEndpoint = endpointRepo.findByNameAndOwner(endpointName, user);
+        if (endpoint.getEndpointName() != null)
+            updatedEndpoint.setName(endpoint.getEndpointName());
+        if (endpoint.getUrl() != null)
+            updatedEndpoint.setUrl(endpoint.getUrl());
+        if (endpoint.getMonitoredInterval() != null)
+            updatedEndpoint.setMonitoredInterval(endpoint.getMonitoredInterval());
+        return endpointRepo.save(updatedEndpoint);
+    }
+
+    @Override
+    public Endpoint getEndpointByName(String endpointName) {
+        return endpointRepo.findByName(endpointName);
+    }
+
+    @Override
+    public List<Endpoint> getAllEndpoints(String accessToken) {
         User user = validateUser(accessToken);
         return endpointRepo.findAllByOwner(user);
     }
 
     @Override
-    public Endpoint getByEndpointId(String accessToken, Integer id) {
-        User user = validateUser(accessToken);
-        return endpointRepo.findByEndpointIdAndOwner(id, user);
+    public Endpoint getByEndpointId(Integer id) {
+        return endpointRepo.findByEndpointId(id);
     }
 
     @Override
