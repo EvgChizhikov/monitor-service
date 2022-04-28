@@ -4,8 +4,6 @@ import com.applifting.monitorservice.data.model.Endpoint;
 import com.applifting.monitorservice.service.EndpointService;
 import com.applifting.monitorservice.service.ResultService;
 import lombok.extern.slf4j.Slf4j;
-
-import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
