@@ -1,27 +1,6 @@
 version: '3.1'
 services:
 
-  monitor-service:
-    container_name: monitor-service
-    build:
-      context: ./
-      dockerfile: Dockerfile
-    image: monitor-service:latest
-    ports:
-      - 8080:8080
-    environment:
-      SPRING_APPLICATION_JSON: '{
-          "spring.datasource.url": "jdbc:mysql://docker-mysql:3306/appliftingdb?autoReconnect=true&useSSL=false",
-          "spring.datasource.password": "root",
-          "spring.datasource.username": "root",
-          "spring.jpa.hibernate.ddl-auto": "update",
-          "spring.jpa.show-sql": "true",
-          "spring.jpa.properties.hibernate.dialect": "org.hibernate.dialect.MySQL8Dialect",
-          "spring.jpa.properties.hibernate.format_sql": "true"
-        }'
-    networks:
-      - spring-cloud-network
-
   docker-mysql:
     image: mysql:latest
     restart: always
@@ -31,11 +10,38 @@ services:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: appliftingdb
       MYSQL_PASSWORD: root
-    security_opt:
-      - seccomp:unconfined
-    networks:
-      - spring-cloud-network
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
 
-networks:
-    spring-cloud-network:
-      driver: bridge
+  flyway:
+    container_name: flyway
+    image: boxfuse/flyway
+    command: -url=jdbc:mysql://docker-mysql:3306/appliftingdb?autoReconnect=false&useSSL=false&allowPublicKeyRetrieval=true -schemas=appliftingdb -user=root -password=root migrate
+    volumes:
+      - "./src/main/resources/db/migration:/flyway/sql"
+    depends_on:
+      docker-mysql:
+        condition: service_healthy
+
+  monitor-service:
+    container_name: monitor-service
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    image: monitor-service:latest
+    ports:
+      - 8080:8080
+    depends_on:
+      - flyway
+    environment:
+      SPRING_APPLICATION_JSON: '{
+          "spring.datasource.url": "jdbc:mysql://docker-mysql:3306/appliftingdb?autoReconnect=false&useSSL=false&allowPublicKeyRetrieval=true",
+          "spring.datasource.password": "root",
+          "spring.datasource.username": "root",
+          "spring.jpa.hibernate.ddl-auto": "update",
+          "spring.jpa.show-sql": "true",
+          "spring.jpa.properties.hibernate.dialect": "org.hibernate.dialect.MySQL8Dialect",
+          "spring.jpa.properties.hibernate.format_sql": "true"
+        }'
